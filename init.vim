@@ -42,7 +42,9 @@ nnoremap H ^
 nnoremap L $
 
 " easy shortcut to command input mode. Same key without pressing shift
-nnoremap ; :
+" UPDATE: this won't work, because ; is mapped to jump to next match in line
+" when using F or f to jump to symbol
+" nnoremap ; :
 
 " remap Alt+t to switch between two recent buffers
 nnoremap <A-t> :b#<CR>
