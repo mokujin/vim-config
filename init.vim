@@ -112,22 +112,38 @@ colorscheme gruvbox
 " Highlight all instances of word under cursor, when idle.
 " Useful when studying strange source code.
 " Type z/ to toggle highlighting on/off.
+hi AutoHighlightGroup guibg=#504945
+let AutoHighlight = matchadd("AutoHighlightGroup", "")
 nnoremap z/ :if AutoHighlightToggle()<Bar>set hls<Bar>endif<CR>
+
+function! ChangeAutoHighlight()
+    for m in filter(getmatches(), { i, v -> l:v.group is? 'AutoHighlightGroup' })
+        call matchdelete(m.id)
+    endfor
+    let AutoHighlight = matchadd("AutoHighlightGroup", expand('<cword>'))
+endfunction
+
+function! ClearAutoHighlight()
+    for m in filter(getmatches(), { i, v -> l:v.group is? 'AutoHighlightGroup' })
+        call matchdelete(m.id)
+    endfor
+endfunction
+
 function! AutoHighlightToggle()
-  let @/ = ''
-  if exists('#auto_highlight')
-    au! auto_highlight
-    augroup! auto_highlight
-    setl updatetime=4000
-    echo 'Highlight current word: off'
-    return 0
-  else
-    augroup auto_highlight
-      au!
-      au CursorHold * let @/ = '\V\<'.escape(expand('<cword>'), '\').'\>'
-    augroup end
-    setl updatetime=100
-    echo 'Highlight current word: ON'
-    return 1
-  endif
+    if exists('#auto_highlight')
+        au! auto_highlight
+        augroup! auto_highlight
+        setl updatetime=4000
+        call ClearAutoHighlight()
+        echo 'Highlight current word: off'
+        return 0
+    else
+        augroup auto_highlight
+            au!
+            au CursorHold * call  ChangeAutoHighlight()
+        augroup end
+        setl updatetime=100
+        echo 'Highlight current word: ON'
+        return 1
+    endif
 endfunction
