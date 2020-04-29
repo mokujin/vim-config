@@ -14,7 +14,7 @@ set cc=120                  " set an 80 column border for good coding style
 set encoding=utf-8          " utf8 encoding in files
 set clipboard=unnamedplus   " yank to system clipboard as well
 set showcmd                 " show command keys while you typing
-set timeoutlen=3000         " timeout for leader key
+set timeoutlen=500          " timeout for leader key
 set mouse=a                 " mouse support
 set autoread                " reload files changed outside vim
 set showmode                " show current mode down the bottom
@@ -27,37 +27,54 @@ syntax on                   " syntax highlighting
 " double escape to reset search highlight
 nnoremap <silent> <Esc><Esc> :let @/=""<CR> 
 
-" remap Ctrl+[hjkl] to switch windows
-nmap <silent> <A-k> :wincmd k<CR>
-nmap <silent> <A-j> :wincmd j<CR>
-nmap <silent> <A-h> :wincmd h<CR>
-nmap <silent> <A-l> :wincmd l<CR>
+" remap exit from terminal mode to EscEsc in quick succession
+tnoremap <Esc><Esc> <C-\><C-n>
 
 " sroll on Ctrl+J/Ctrl+K
 nnoremap <C-j> <C-y>
 nnoremap <C-k> <C-e>
 
+" change vertical split ratio with Ctrl-l, Ctrl-h
+nnoremap <C-l> :vertical resize +1<CR>
+nnoremap <C-h> :vertical resize -1<CR>
+
+" jump to previous/next place visited with Alt-j, Alt-k
+nnoremap <A-k> <C-O> 
+nnoremap <A-j> <C-I> 
+
 " jump to begin/end of line with HL
 nnoremap H ^
 nnoremap L $
+
+" map commands to work with capital letters as well to prevent accidental typos
+command! WQ wq
+command! Wq wq
+command! W w
+command! Q q
 
 " easy shortcut to command input mode. Same key without pressing shift
 " UPDATE: this won't work, because ; is mapped to jump to next match in line
 " when using F or f to jump to symbol
 " nnoremap ; :
 
-" remap Alt+t to switch between two recent buffers
-nnoremap <A-t> :b#<CR>
+" remap Alt+i to switch between two recent buffers
+nnoremap <A-i> :b#<CR>
+
+" repeat last executed command with Ctrl+.
+nnoremap <C-.> :<UP><CR>
 
 " SPACE becomes a leader key
 nnoremap <SPACE> <Nop>
 let mapleader=" "
 
-" remap exit from terminal mode to EscEsc in quick succession
-tnoremap <Esc><Esc> <C-\><C-n>
+" remap space w [hjkl] to switch windows
+nmap <silent> <leader>wk :wincmd k<CR>
+nmap <silent> <leader>wj :wincmd j<CR>
+nmap <silent> <leader>wh :wincmd h<CR>
+nmap <silent> <leader>wl :wincmd l<CR>
 
 " toggle NERDTree 
-nnoremap <leader>f :NERDTreeToggle<CR>
+nnoremap <silent> <leader>f :NERDTreeToggle<CR>
 " toggle NERDTree AND select current file editing in it
 nnoremap <silent> <leader>v :NERDTreeFind<CR>
 " automatically delete the buffer of the file you just deleted with NERDTree
@@ -92,3 +109,25 @@ call plug#end()
 
 colorscheme gruvbox
 
+" Highlight all instances of word under cursor, when idle.
+" Useful when studying strange source code.
+" Type z/ to toggle highlighting on/off.
+nnoremap z/ :if AutoHighlightToggle()<Bar>set hls<Bar>endif<CR>
+function! AutoHighlightToggle()
+  let @/ = ''
+  if exists('#auto_highlight')
+    au! auto_highlight
+    augroup! auto_highlight
+    setl updatetime=4000
+    echo 'Highlight current word: off'
+    return 0
+  else
+    augroup auto_highlight
+      au!
+      au CursorHold * let @/ = '\V\<'.escape(expand('<cword>'), '\').'\>'
+    augroup end
+    setl updatetime=100
+    echo 'Highlight current word: ON'
+    return 1
+  endif
+endfunction
